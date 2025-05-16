@@ -13,6 +13,14 @@ alias run-vm := run-vm-qcow2
 default:
     @just --list
 
+[group('crussell')]
+pm-save:
+    podman save localhost/nix-blue:latest --format=oci-archive -o nix-blue-oci.tar
+
+[group('crussell')]
+pm-bootc-switch:
+    sudo bootc switch --transport=oci-archive ./nix-blue-oci.tar
+
 # Check Just Syntax
 [group('Just')]
 check:
@@ -337,7 +345,7 @@ lint:
 
 # Runs shfmt on all Bash scripts
 format:
-     #!/usr/bin/env bash
+    #!/usr/bin/env bash
     set -eoux pipefail
     # Check if shfmt is installed
     if ! command -v shfmt &> /dev/null; then
