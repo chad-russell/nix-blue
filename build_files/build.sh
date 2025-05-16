@@ -2,9 +2,17 @@
 
 set -ouex pipefail
 
+rpm-ostree install \
+    gnome-tweaks \
+    tailscale
+
 systemctl enable podman.socket
 
-# mkdir /nix
+
+# === nix Setup ===
+
+# Step 0: Make a /nix directory
+mkdir -p /nix
 
 # Step 1: Create the placeholder directory for the Nix store's actual data.
 # Determinate Systems installer for OSTree often defaults to /var/lib/nix.
@@ -48,14 +56,17 @@ EOF
 echo "Enabling nix.mount systemd unit..."
 systemctl enable nix.mount
 
-# Step 4: Set up shell profile for Nix.
-# This will source the Nix environment once Nix is fully installed by the user.
-PROFILE_D_DIR="/etc/profile.d"
-echo "Creating Nix shell environment setup script in ${PROFILE_D_DIR}/nix.sh..."
-mkdir -p "${PROFILE_D_DIR}"
-cat <<EOF > "${PROFILE_D_DIR}/nix.sh"
-# Source Nix environment if available (after user installs Nix into the store)
-if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
-  . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
-fi
-EOF
+
+
+echo "Installing Zsh..."
+rpm-ostree install zsh util-linux-user # util-linux-user for chsh
+
+# Optionally set zsh as default for new users (careful with this system-wide)
+echo "Setting Zsh as default shell for new users..."
+sed -i 's#SHELL=/bin/bash#SHELL=/bin/zsh#' /etc/default/useradd
+
+
+# --- Final Cleanups / Other Customizations ---
+# Example: Remove unnecessary cached files from package manager
+rpm-ostree cleanup -m
+rm -rf /var/cache/*
