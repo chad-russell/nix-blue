@@ -2,10 +2,6 @@
 
 set -ouex pipefail
 
-rpm-ostree install \
-    gnome-tweaks \
-    tailscale
-
 systemctl enable podman.socket
 
 
@@ -56,15 +52,8 @@ EOF
 echo "Enabling nix.mount systemd unit..."
 systemctl enable nix.mount
 
-
-
 echo "Installing Zsh..."
 rpm-ostree install zsh util-linux-user # util-linux-user for chsh
-
-# Optionally set zsh as default for new users (careful with this system-wide)
-echo "Setting Zsh as default shell for new users..."
-sed -i 's#SHELL=/bin/bash#SHELL=/bin/zsh#' /etc/default/useradd
-
 
 # --- Final Cleanups / Other Customizations ---
 # Example: Remove unnecessary cached files from package manager
